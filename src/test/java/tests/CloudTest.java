@@ -1,5 +1,6 @@
 package tests;
 
+
 import base.*;
 import objects.ComputerEngine;
 import objects.PropertiesReader;
@@ -17,7 +18,6 @@ import util.TestListener;
 import java.util.ArrayList;
 @Listeners({TestListener.class})
 public class CloudTest extends BaseTest{
-
     public static final String YOP_MAIL = "https://yopmail.com/en/email-generator";
     public  static final CloudMainPage cloudMainPage = new CloudMainPage(driver);
     public  static final CloudSearchResult searchResult = new CloudSearchResult(driver);
