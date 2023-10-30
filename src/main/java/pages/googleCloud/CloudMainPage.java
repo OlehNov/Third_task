@@ -29,7 +29,6 @@ public class CloudMainPage extends BasePage {
 
     public CloudMainPage searchTextInput(String searchText){
         waitAndSendKeys(searchInput, searchText);
-//        wait.until(ExpectedConditions.elementToBeClickable(searchInput)).sendKeys(searchText);
         System.out.println("Text entered into the Search_Field");
         return this;
     }

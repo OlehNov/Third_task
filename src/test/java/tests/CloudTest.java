@@ -1,81 +1,86 @@
 package tests;
 
-import base.BasePage;
-import base.Helper;
-import base.Locators;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+
+import base.*;
+import objects.ComputerEngine;
+import objects.PropertiesReader;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
 import pages.googleCloud.CalculatePage;
 import pages.googleCloud.CloudMainPage;
 import pages.googleCloud.CloudSearchResult;
 import pages.yopMail.EmailHomePage;
 import pages.yopMail.Yopmail;
+import util.TestListener;
 import java.util.ArrayList;
-
-public class CloudTest{
-    public static final String CLOUD_URL = "https://cloud.google.com/";
+@Listeners({TestListener.class})
+public class CloudTest extends BaseTest{
     public static final String YOP_MAIL = "https://yopmail.com/en/email-generator";
-    public  static final WebDriver driver = new ChromeDriver();
     public  static final CloudMainPage cloudMainPage = new CloudMainPage(driver);
     public  static final CloudSearchResult searchResult = new CloudSearchResult(driver);
     public  static final CalculatePage calculatePage = new CalculatePage(driver);
     public  static final Yopmail yopmail = new Yopmail(driver);
-    public static final Helper helper = new Helper(driver);
-    public static final BasePage basePage = new BasePage(driver);
+    public static final NavigationHelper navigationHelper = new NavigationHelper(driver);
     public static final EmailHomePage emailHomePage = new EmailHomePage(driver);
                                  // Test Variables //
-    public static  final String SEARCH_TEXT = "Google Cloud Platform Pricing Calculator";
-    public static  final String AMOUNT = "4";
-    public static  final String INSTANCES = "leave blank";
-    public static  final String SERIOUS_VALUE = "n1";
-    public static  final String MACHINE_STANDARD = "CP-COMPUTEENGINE-VMIMAGE-N1-STANDARD-8";
-    public static  final String CARD_MODEL = "NVIDIA_TESLA_T4";
-    public static  final String GPU_AMOUNT = "1";
-    public static  final String SSD_AMOUNT = "2";
-    public static  final String ADDRESS = "europe-west3";
-    public static  final String YEARS_AMOUNT = "1";
+    public String searchText  = "Google Cloud Platform Pricing Calculator";
+    public static final String TEST_PROPERTIES = "firstConfig.properties";
 
-    @Before
-    public void start(){
-        basePage.googleCloudPageOpen(CLOUD_URL);
-        basePage.maximizeWindow();
+    @BeforeMethod
+    public void startTest(){
+        setUp(driver);
     }
 
     @Test
     public void createNewPaste(){
-        cloudMainPage.calculatorSearch(SEARCH_TEXT);
+        PropertiesReader propertiesReader = new PropertiesReader(TEST_PROPERTIES);
+        ComputerEngine businessObject = new ComputerEngine(
+                propertiesReader.getProperty("instances"),
+                propertiesReader.getProperty("amount"),
+                propertiesReader.getProperty("serious.value"),
+                propertiesReader.getProperty("machine.standard"),
+                propertiesReader.getProperty("card.model"),
+                propertiesReader.getProperty("gpu.amount"),
+                propertiesReader.getProperty("ssd.amount"),
+                propertiesReader.getProperty("address"),
+                propertiesReader.getProperty("years.amount")
+        );
+        cloudMainPage.calculatorSearch(searchText);
         searchResult.searchResultClick();
         calculatePage
                 .computerEngineClick()
-                .whatInstancesInput(INSTANCES)
-                .ofInstancesInput(AMOUNT)
-                .seriesListButtonClick(Locators.SERIOUS, SERIOUS_VALUE)
-                .machineTypeDropDownButtonClick(Locators.MACHINE, MACHINE_STANDARD)
+                .whatInstancesInput(businessObject.getInstances())
+                .ofInstancesInput(businessObject.getAmount())
+                .seriesListButtonClick(Locators.SERIOUS, businessObject.getSeriousValue())
+                .machineTypeDropDownButtonClick(Locators.MACHINE, businessObject.getMachineStandard())
                 .GPUsCheckButtonClick()
-                .typeGPUDropDownButtonClick(Locators.VIDEO_CARD, CARD_MODEL)
-                .numberOfGPUDropDownButtonClick(Locators.GPU, GPU_AMOUNT)
-                .localSSDDropDownButtonClick(Locators.SSD, SSD_AMOUNT)
-                .datacenterLocationClick(Locators.LOCATION, ADDRESS)
-                .committedUsageDropDownButtonClick(Locators.YEARS, YEARS_AMOUNT)
+                .typeGPUDropDownButtonClick(Locators.VIDEO_CARD, businessObject.getCardModel())
+                .numberOfGPUDropDownButtonClick(Locators.GPU, businessObject.getGpuAmount())
+                .localSSDDropDownButtonClick(Locators.SSD, businessObject.getSsdAmount())
+                .datacenterLocationClick(Locators.LOCATION, businessObject.getAddress())
+                .committedUsageDropDownButtonClick(Locators.YEARS, businessObject.getYearsAmount())
                 .addToEstimateButtonClick()
                 .emailButtonClick();
         String expect_monthly_cost = calculatePage.readNewPasteTitle();
-        ArrayList<String> tabs = helper.switchToANewBrowserTab();
+        ArrayList<String> tabs = navigationHelper.switchToANewBrowserTab();
         yopmail.yopMailPageOpen(YOP_MAIL)
                 .generateEmail();
-        helper.click(tabs);
-        helper.returnToCalculatePage();
+        navigationHelper
+                .click(tabs)
+                .returnToCalculatePage();
         calculatePage.enterGenerateYopMail();
-        helper.returnToPreviousTab();
-        emailHomePage.checkPopUpDisplayed();
+        navigationHelper
+                .returnToPreviousTab()
+                .refreshBrowserPage();
+        emailHomePage.checkEmailInPost();
         Assert.assertTrue(expect_monthly_cost.contains(emailHomePage.getYopMailCost()));
     }
-    @After
-    public void end(){
-        basePage.closeBrowser();
+
+    @AfterMethod(alwaysRun = true)
+    public void finishTest(){
+        closeBrowser(driver);
     }
 }

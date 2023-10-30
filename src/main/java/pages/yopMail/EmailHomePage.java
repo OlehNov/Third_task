@@ -2,16 +2,17 @@ package pages.yopMail;
 
 import base.BasePage;
 import base.Locators;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import static java.time.Duration.ofMillis;
 
 public class EmailHomePage extends BasePage {
 
-    @FindBy(css = "tbody>:nth-child(2)>:nth-child(2)>h3") // This is a table, so there are many tabs and identical locators
+    @FindBy(css = "tbody>:nth-child(2)>:nth-child(2)>h3")
     WebElement yopMailMonthlyCost; //text
     @FindBy(xpath = "//button[@id='refresh']")
     WebElement refreshButton;//click
@@ -39,14 +40,13 @@ public class EmailHomePage extends BasePage {
         return emailInformation.getText();
     }
 
-    public void checkCost(){
+    public void checkEmailInPost(){
         checkInboxClick();
-        int i = 1;
-        int maxAttempts = 5;
-        while (!getEmailAmount().equals("1 mail") && i <= maxAttempts) {
-            emailRefreshClick();
-            i++;
-        }
+        new WebDriverWait(driver, ofMillis(5000)).pollingEvery(ofMillis(500))
+                .until(condition -> {
+                    emailRefreshClick();
+                    return getEmailAmount().equals("1 mail");
+                });
     }
 
     public EmailHomePage checkInboxClick() {
@@ -57,16 +57,5 @@ public class EmailHomePage extends BasePage {
 
     public void iFrameEmailField(){
         calculatePageIFrame(Locators.YOPMAIL_IFRAME);
-    }
-
-    public EmailHomePage checkPopUpDisplayed(){
-        try {
-            WebElement popup = driver.findElement(By.xpath(Yopmail.popupWindow));
-            if (popup.isDisplayed()) {
-                popup.findElement(By.xpath(Yopmail.popupCloseButton)).click();
-            }
-        } catch (org.openqa.selenium.NoSuchElementException continue_test) {}
-        checkCost();
-        return this;
     }
 }

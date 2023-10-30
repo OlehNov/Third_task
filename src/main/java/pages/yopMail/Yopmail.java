@@ -15,9 +15,6 @@ public class Yopmail extends BasePage {
     @FindBy(xpath = "//button[@id='cprnd']")
     WebElement copyButton; //click
 
-    public static String popupWindow = "//div[@id='card']";
-    public static String popupCloseButton = "//div[@id='dismiss-button']";
-
     //Methods
     public Yopmail(WebDriver driver) {
         super(driver);

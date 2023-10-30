@@ -8,8 +8,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 
-public class BasePage {
-    public WebDriver driver;
+
+public abstract class BasePage {
+    public static WebDriver driver;
     public WebDriverWait wait;
     public JavascriptExecutor js;
     public BasePage(WebDriver driver){
@@ -24,21 +25,7 @@ public class BasePage {
     public void waitAndSendKeys(WebElement locator, String value){
         wait.until(ExpectedConditions.elementToBeClickable(locator)).sendKeys(value);
     }
-
     public void calculatePageIFrame(String locator){
         driver.switchTo().frame(driver.findElement(By.cssSelector(locator)));
-    }
-
-    public void googleCloudPageOpen(String cloud_url){
-        driver.get(cloud_url);
-
-    }
-    public void maximizeWindow(){
-        driver.manage().window().maximize();
-    }
-
-
-    public void closeBrowser(){
-        driver.quit();
     }
 }
